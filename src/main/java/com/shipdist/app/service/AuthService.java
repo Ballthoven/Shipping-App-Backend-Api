@@ -3,6 +3,7 @@ package com.shipdist.app.service;
 import com.shipdist.app.dto.AuthResponse;
 import com.shipdist.app.dto.LoginRequest;
 import com.shipdist.app.dto.RegisterRequest;
+import com.shipdist.app.entity.Role;
 import com.shipdist.app.entity.User;
 import com.shipdist.app.repository.UserRepository;
 import com.shipdist.app.security.JwtService;
@@ -38,12 +39,12 @@ public class AuthService {
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setPhone(request.getPhone());
+        user.setRole(Role.STAFF);
 
         userRepository.save(user);
 
         String token = jwtService.generateToken(toUserDetails(user));
-        return new AuthResponse(token, user.getId(), user.getFullName(), user.getEmail());
-    }
+        return new AuthResponse(token, user.getId(), user.getFullName(), user.getEmail(), user.getRole().name()); }
 
     public AuthResponse login(LoginRequest request) {
         authenticationManager.authenticate(
@@ -53,8 +54,7 @@ public class AuthService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         String token = jwtService.generateToken(toUserDetails(user));
-        return new AuthResponse(token, user.getId(), user.getFullName(), user.getEmail());
-    }
+        return new AuthResponse(token, user.getId(), user.getFullName(), user.getEmail(), user.getRole().name());   }
 
     private UserDetails toUserDetails(User user) {
         return org.springframework.security.core.userdetails.User.builder()
